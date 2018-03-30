@@ -1,0 +1,9 @@
+<resources>
+    <string name="action_refresh">Refresh</string>
+    <string name="app_name">popularmoviests</string>
+    <string name="most_popular">Sort by most popular</string>
+    <string name="top_rated">Sort by rating</string>
+    <string name="release">Release</string>
+    <string name="rating">Rating</string>
+    <string name="overview">Overview</string>
+</resources>
