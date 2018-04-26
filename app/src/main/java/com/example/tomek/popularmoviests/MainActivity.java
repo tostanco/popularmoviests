@@ -1,87 +1,79 @@
 package com.example.tomek.popularmoviests;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends Activity { //implements RecyclerView.OnClickListener{
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-    public static final String API_KEY = "";
-    public static final String BASE_URL = "https://api.themoviedb.org/t/p";
-    public final String POPULAR = "popular";
-    public final String TOP_RATED = "top_rated";
-    public PopularMoviesAdapter popularMoviesAdapter;
-    private ArrayList<Movies> moviesList;
-    public TextView errorMessage;
-    public ProgressBar loadingIndicator;
-    private TextView emptyView;
-    private RecyclerView recyclerView;
-    Context context = this;
+import static com.example.tomek.popularmoviests.MoviesAPI.BASE_URL;
+import static com.example.tomek.popularmoviests.MoviesAPI.KEY;
+import static com.example.tomek.popularmoviests.MoviesAPI.MOST_POPULAR;
+import static com.example.tomek.popularmoviests.MoviesAPI.TOP_RATED;
+
+
+public class MainActivity extends Activity {
+
+    private static final String TAG = "MainActivity";
+    private static final int NUM_COLUMNS = 2;
+
+    private ArrayList<String> Titles = new ArrayList<>();
+    private ArrayList<String> Images = new ArrayList<>();
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(TAG, "onCreate: started");
+    }
+    private void loadJSON() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL + KEY + TOP_RATED)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        MoviesAPI moviesAPI = retrofit.create(MoviesAPI.class);
+    }
 
-        errorMessage = findViewById(R.id.error_message);
-        loadingIndicator = findViewById(R.id.progressBar);
-        emptyView = findViewById(R.id.empty_view);
-        moviesList = new ArrayList<>();
-        popularMoviesAdapter = new PopularMoviesAdapter(this, moviesList);
-
-        RecyclerView recyclerView = findViewById(R.id.cards);
-        LinearLayoutManager llm = new LinearLayoutManager(context);
-        recyclerView.setLayoutManager(llm);
-
-            PopularMoviesAdapter adapter = new PopularMoviesAdapter(context, moviesList);
-            recyclerView.setAdapter(adapter);
-            recyclerView.setOnClickListener(new View.OnClickListener() {
-                
-                @Override
-                public void onClick(View v) {
-                    int movies = popularMoviesAdapter.getItemCount();
-                    Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-                    intent.putExtra("movie", movies);
-                    startActivity(intent);
-                }
-            });
-            showItems (POPULAR);
-        }
-        public void showItems (String items){
-            if (moviesList.isEmpty()) {
-                recyclerView.setVisibility(View.GONE);
-                emptyView.setVisibility(View.VISIBLE);
-            }
-            else {
-                recyclerView.setVisibility(View.VISIBLE);
-                emptyView.setVisibility(View.GONE);
-            }
+    Call<BASE_URL+KEY+TOP_RATED> call = call.getMovies.
+            call.enqueue(new Callback<>() {
+        @Override
+        public void onResponse(Call call, Response response) {
 
         }
+
+        @Override
+        public void onFailure(Call call, Throwable t) {
+
+        }
+    }
+    private void initRecyclerView() {
+        RecyclerView recyclerView = findViewById(R.id.recycler_main);
+        StaggeredGridLayoutManager staggeredGridLayoutManager =
+                new StaggeredGridLayoutManager(NUM_COLUMNS, LinearLayoutManager.VERTICAL);
+        RecyclerView recyclerMain;
+        recyclerMain.setLayoutManager(staggeredGridLayoutManager);
+        recyclerView.setAdapter(PopularMoviesAdapter.);
+    }
+}
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,133 +82,18 @@ public class MainActivity extends Activity { //implements RecyclerView.OnClickLi
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        showItems(POPULAR);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_top_rated){
-            showItems(TOP_RATED);
-            return true;
-        }
-        if (id== R.id. action_most_popular || id == R.id.action_refresh ){
-            showItems(POPULAR);
-            return true;
-        }
+//        int id = item.getItemId();
+//        if (id == R.id.action_top_rated) {
+//            showItems(TOP_RATED);
+//            return true;
+//        }
+//        if (id == R.id.action_most_popular || id == R.id.action_refresh) {
+//            showItems(POPULAR);
+//            return true;
+//        }
         return super.onOptionsItemSelected(item);
     }
-    public class FetchMovies extends AsyncTask<String, Void, Movies[]>{
-        private final Window.Callback callback;
-        private FetchMovies(Window.Callback movieCallback){
-            this.callback = movieCallback;
-        }
-        private Movies[] getMoviesFromJson(String jsonStringMovie) throws JSONException {
-            if (jsonStringMovie == null || "".equals(jsonStringMovie)) {
-                return null;
-            }
-
-            JSONObject jsonObjectMovie = new JSONObject(jsonStringMovie);
-            JSONArray jsonArrayMovies = jsonObjectMovie.getJSONArray("results");
-
-            Movies[] movies = new Movies[jsonArrayMovies.length()];
-
-            for (int i = 0; i < jsonArrayMovies.length(); i++) {
-                JSONObject object = jsonArrayMovies.getJSONObject(i);
-                movies[i] = new Movies(object.getString("original_title"),
-                        object.getString("poster_path"),
-                        object.getString("overview"),
-                        object.getInt("vote_average"),
-                        object.getInt("release_date"));
-            }
-            return movies;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            loadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Movies[] doInBackground(String... strings) {
-            if (strings.length == 0) {
-                return null;
-            }
-
-            HttpURLConnection urlConnection = null;
-            String movieJsonString = null;
-            BufferedReader reader = null;
-
-            Uri uri = Uri.parse(BASE_URL).buildUpon()
-                    .appendEncodedPath(strings[0])
-                    .appendQueryParameter("api_key", API_KEY)
-                    .build();
-
-            try {
-                URL url = new URL(uri.toString());
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuilder builder = new StringBuilder();
-                if (inputStream == null) {
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line + "\n");
-                }
-
-                if (builder.length() == 0) {
-                    return null;
-                }
-
-                movieJsonString = builder.toString();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            try {
-                return getMoviesFromJson(movieJsonString);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            // return null;
-            return new Movies[0];
-        }
-
-        @Override
-        protected void onPostExecute(Movies[] movies) {
-            loadingIndicator.setVisibility(View.INVISIBLE);
-           super.onPostExecute(movies);
-            Toast.makeText(MainActivity.this, "Loaded", Toast.LENGTH_SHORT).show();
-        }
-
-        public Window.Callback getCallback() {
-            return callback;
-        }
     }
-}
-
-
 
 

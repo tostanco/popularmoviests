@@ -6,4 +6,12 @@
     <string name="release">Release</string>
     <string name="rating">Rating</string>
     <string name="overview">Overview</string>
+    <string name="refresh">Refresh</string>
+    <string name="thumbnail">THUMBNAIL</string>
+    <string name="title">TITLE</string>
+    <string name="vote">VOTE</string>
+    <string name="release_date">RELEASE DATE</string>
+    <string name="plot_description">PLOT DESCRIPTION</string>
+    <string name="no_internet_connection">NO INTERNET CONNECTION!</string>
+    <string name="no_data_available">No data available</string>
 </resources>
